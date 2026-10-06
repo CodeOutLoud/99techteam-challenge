@@ -7,29 +7,47 @@ User can do an action, completing this action will increase the user’s score.
 Upon completion the action will dispatch an API call to the application server to update the score.
 Updating the score required users to be authenticated first.
 
+# Database
+
+- UserScore
+  - userId: number - PRIMARY KEY
+  - userName: string // For quickly selection instead of joining tables
+  - score: number
+  - created_at: timestamp
+  - updated_at: timestamp
+
+- UserActionLog
+  - id: number - PRIMARY_KEY
+  - userId: number
+  - userName: string
+  - created_at: timestamp
+
 # API
 
 - GET:/api/v1/scores/top
 
-Description: Get the first 10 top score users
+Description: Get the first 10 top score users. This API query directly from cache instead of database
 
 Response Model:
 
-> {
-> userId: number
-> userName: string
-> score: number
-> }
+> [
+>
+> > {
+> > userId: number,
+> > score: number,
+> > rank: number
+> > }
+> > ]
 
 - POST:/api/v1/scores/increment
 
-Description: Increase a user's score by 1
+Description: Increase a user's score by 1. This API will write first to cache, then patch data gradually into database
 
 Header:
 
 - Authentication
 
-  > JWT [token]
+  > Bearer [JWT]
 
 - Payload:
   > {
@@ -59,4 +77,5 @@ Client --> Web[Web]
 Socket --> Web
 Cache --> Socket[Socket]
 Cache --> Database[Database]
+Database --> Cache
 ```
