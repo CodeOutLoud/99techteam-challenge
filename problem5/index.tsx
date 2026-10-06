@@ -7,12 +7,26 @@ app.use(express.urlencoded({ extended: true }));
 const port = parseInt(process.env.PORT || "3000") || 3000;
 
 app.get("/movies", async (req: Request, res: Response) => {
-  const { data, error } = await supabase
+  const { active, year, name } = req.query;
+
+  const connection = supabase
     .from("movies")
     .select("*")
-    .eq("active", true)
-    .order("year", { ascending: false });
+    .order("created_at", { ascending: false });
 
+  if (active !== undefined) {
+    connection.eq("active", active === "true");
+  }
+
+  if (year !== undefined) {
+    connection.eq("year", year);
+  }
+
+  if (name !== undefined) {
+    connection.ilike("name", `%${name}%`);
+  }
+
+  const { data, error } = await connection;
   if (error) {
     res.status(500).send("Error fetching movies");
   } else {
@@ -68,7 +82,7 @@ app.delete("/movies/:id", async (req: Request, res: Response) => {
   const movieId = parseInt(`${req.params.id}`);
   const { data, error } = await supabase
     .from("movies")
-    .update({ active: false })
+    .delete()
     .eq("id", movieId);
 
   if (error) {
