@@ -63,7 +63,7 @@ const WalletPage: React.FC<Props> = (props: Props) => {
           />
         );
       });
-  }, [balances]);
+  }, [balances, prices]);
 
   return <div {...rest}>{sortedBalances}</div>;
 };
